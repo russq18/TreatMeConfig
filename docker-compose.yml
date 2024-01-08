@@ -1,0 +1,34 @@
+version: '3.4'
+
+services:
+  treatmeweb:
+    image: russyruss/treatmeweb:latest
+    container_name: treatmeweb
+    restart: always
+    ports:
+      - "8081:8081"
+    stdin_open: true
+    labels:
+      - "traefik.http.routers.site.rule=Host(`app.localhost`)"
+    depends_on:
+      - traefik
+
+  api:
+    image: russyruss/treatmegateway:latest
+    container_name: treatmegateway
+    restart: always
+    ports:
+      - "3080:3080"
+    labels:
+      - "traefik.http.routers.api.rule=(Host(`app.localhost`) && PathPrefix(`/api`))"
+    depends_on:
+      - traefik
+
+  traefik:
+    image: traefik:v2.9
+    command: --api.insecure=true --providers.docker
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
